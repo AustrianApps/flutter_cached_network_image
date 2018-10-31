@@ -45,6 +45,7 @@ class CachedNetworkImage extends StatefulWidget {
     this.repeat: ImageRepeat.noRepeat,
     this.matchTextDirection: false,
     this.httpHeaders,
+    this.httpFileFetcher,
   })  : assert(imageUrl != null),
         assert(fadeOutDuration != null),
         assert(fadeOutCurve != null),
@@ -145,6 +146,9 @@ class CachedNetworkImage extends StatefulWidget {
   // Optional headers for the http request of the image url
   final Map<String, String> httpHeaders;
 
+  // Optional file fetcher used to download image.
+  final FileFetcher httpFileFetcher;
+
   @override
   State<StatefulWidget> createState() => new _CachedNetworkImageState();
 }
@@ -228,7 +232,8 @@ class _CachedNetworkImageState extends State<CachedNetworkImage>
   void initState() {
     _hasError = false;
     _imageProvider = new CachedNetworkImageProvider(widget.imageUrl,
-        headers: widget.httpHeaders, errorListener: _imageLoadingFailed);
+        headers: widget.httpHeaders, fileFetcher: widget.httpFileFetcher,
+        errorListener: _imageLoadingFailed);
     _imageResolver =
         new _ImageProviderResolver(state: this, listener: _updatePhase);
 
@@ -268,6 +273,7 @@ class _CachedNetworkImageState extends State<CachedNetworkImage>
     if (widget.imageUrl != oldWidget.imageUrl ||
         widget.placeholder != widget.placeholder) {
       _imageProvider = new CachedNetworkImageProvider(widget.imageUrl,
+          headers: widget.httpHeaders, fileFetcher: widget.httpFileFetcher,
           errorListener: _imageLoadingFailed);
 
       _resolveImage();
@@ -434,7 +440,7 @@ class CachedNetworkImageProvider
   /// Creates an ImageProvider which loads an image from the [url], using the [scale].
   /// When the image fails to load [errorListener] is called.
   const CachedNetworkImageProvider(this.url,
-      {this.scale: 1.0, this.errorListener, this.headers})
+      {this.scale: 1.0, this.errorListener, this.headers, this.fileFetcher})
       : assert(url != null),
         assert(scale != null);
 
@@ -449,6 +455,9 @@ class CachedNetworkImageProvider
 
   // Set headers for the image provider, for example for authentication
   final Map<String, String> headers;
+
+  // Custom file fetcher used to download file if not cached.
+  final FileFetcher fileFetcher;
 
   @override
   Future<CachedNetworkImageProvider> obtainKey(
