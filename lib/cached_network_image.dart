@@ -478,7 +478,7 @@ class CachedNetworkImageProvider
 
   Future<ui.Codec> _loadAsync(CachedNetworkImageProvider key) async {
     var cacheManager = await CacheManager.getInstance();
-    var file = await cacheManager.getFile(url, headers: headers);
+    var file = await cacheManager.getFile(url, headers: headers, fileFetcher: fileFetcher);
     if (file == null) {
       if (errorListener != null) errorListener();
       throw new Exception("Couldn't download or retreive file.");
